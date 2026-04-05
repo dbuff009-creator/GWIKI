@@ -391,7 +391,9 @@ async function navCategory(slug) {
   `;
   document.getElementById("gwBackHome")?.addEventListener("click", e => { e.preventDefault(); renderHome(); });
   document.getElementById("gwNewArticleBtn")?.addEventListener("click", () => {
-    window.location.href = '/wiki-app/editor.html?mode=new&category_id=' + cat.id;
+    window.location.href = '/editor.html?mode=new&category_id=' + cat.id;
+    window.location.href = '/editor.html?mode=edit&article_id=' + art.id;
+
   });
   document.getElementById("gwDeleteCat")?.addEventListener("click", async () => {
     if (!confirm(`Удалить категорию «${cat.name}» и все её статьи?`)) return;
