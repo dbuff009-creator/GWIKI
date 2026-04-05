@@ -310,14 +310,14 @@ function renderAdminSidebar() {
 }
 
 // ── Views ─────────────────────────────────────────────────────────────────────
-function renderHome() {
+async function renderHome() {
   state.view = "home";
   state.currentCat = null;
   state.currentArticle = null;
   renderSidebarCats();
   const cats = state.categories;
-  // Загружаем лайки для всех категорий
-  cats.forEach(c => loadLikes("category", c.id));
+  // Загружаем лайки для всех категорий ПЕРЕД рендером
+  await Promise.all(cats.map(c => loadLikes("category", c.id)));
   gwContent.innerHTML = `
     <div class="gw-home-hero">
       <h1><span style="color:var(--accent)">G</span>wiki</h1>
@@ -391,9 +391,7 @@ async function navCategory(slug) {
   `;
   document.getElementById("gwBackHome")?.addEventListener("click", e => { e.preventDefault(); renderHome(); });
   document.getElementById("gwNewArticleBtn")?.addEventListener("click", () => {
-    window.location.href = '/editor.html?mode=new&category_id=' + cat.id;
-    window.location.href = '/editor.html?mode=edit&article_id=' + art.id;
-
+    window.location.href = '/wiki-app/editor.html?mode=new&category_id=' + cat.id;
   });
   document.getElementById("gwDeleteCat")?.addEventListener("click", async () => {
     if (!confirm(`Удалить категорию «${cat.name}» и все её статьи?`)) return;
