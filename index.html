@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gwiki</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="gw-header">
+    <div class="gw-header__inner">
+      <a class="gw-logo" href="index.html">
+        <span class="gw-logo__g">G</span>wiki
+      </a>
+      <nav class="gw-nav" id="gwNav">
+        <a href="index.html" class="gw-nav__link is-active">Главная</a>
+        <a href="categories.html" class="gw-nav__link">Категории</a>
+      </nav>
+      <div class="gw-search-wrap">
+        <input type="search" id="gwSearch" class="gw-search-input" placeholder="Поиск…" autocomplete="off">
+        <div id="gwSearchResults" class="gw-search-results" hidden></div>
+      </div>
+      <div class="gw-header__right">
+        <div id="gwAuthBar" class="gw-auth-bar"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="gw-layout" id="gwLayout">
+    <!-- Sidebar -->
+    <aside class="gw-sidebar" id="gwSidebar">
+      <div class="gw-sidebar__section">
+        <p class="gw-sidebar__label">Навигация</p>
+        <ul class="gw-sidebar__list">
+          <li><a href="index.html">Главная страница</a></li>
+        </ul>
+      </div>
+      <div class="gw-sidebar__section" id="gwCatNav">
+        <p class="gw-sidebar__label">Категории</p>
+        <ul class="gw-sidebar__list" id="gwCatList">
+          <li class="gw-muted">Загрузка…</li>
+        </ul>
+      </div>
+      <div class="gw-sidebar__section" id="gwAdminSidebar" style="display:none">
+        <p class="gw-sidebar__label">Управление</p>
+        <ul class="gw-sidebar__list">
+          <li><a href="#" id="gwOpenPending">На модерации <span id="gwPendingCount" class="gw-badge"></span></a></li>
+          <li><a href="#" id="gwOpenNewCat">+ Новая категория</a></li>
+          <li><a href="roles.html" id="gwOpenRoles" style="display:none">👥 Управление ролями</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="gw-main" id="gwMain">
+      <div id="gwContent"></div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="gwModalBackdrop" class="gw-modal-backdrop"></div>
+  <div id="gwModal" class="gw-modal" role="dialog" aria-modal="true">
+    <button class="gw-modal__close" id="gwModalClose" aria-label="Закрыть">×</button>
+    <div id="gwModalContent"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

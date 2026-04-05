@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редактор — Gwiki</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background: var(--bg); }
+
+    .ed-layout {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 1.25rem;
+      width: min(100% - 2rem, 1100px);
+      margin: 1.5rem auto 4rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .ed-layout { grid-template-columns: 1fr; }
+      .ed-sidebar { order: -1; }
+    }
+
+    /* ── Основная карточка редактора ── */
+    .ed-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .ed-card__head {
+      padding: 1rem 1.25rem 0.85rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .ed-card__title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--heading);
+    }
+    .ed-card__sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    /* ── Поле заголовка ── */
+    .ed-title-input {
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 1.35rem;
+      font-weight: 700;
+      outline: none;
+      transition: background 0.12s;
+    }
+    .ed-title-input::placeholder { color: var(--muted); font-weight: 400; }
+    .ed-title-input:focus { background: rgba(255,255,255,0.02); }
+    .ed-title-input.is-error { border-bottom-color: var(--red); }
+
+    /* ── Тулбар ── */
+    .ed-toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1px;
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface2);
+    }
+    .ed-toolbar__btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s, color 0.1s;
+      flex-shrink: 0;
+    }
+    .ed-toolbar__btn:hover { background: rgba(255,255,255,0.09); color: var(--heading); }
+    .ed-toolbar__btn.is-active { background: rgba(91,155,213,0.18); color: var(--accent); }
+    .ed-toolbar__sep {
+      width: 1px;
+      height: 20px;
+      background: var(--line);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+    .ed-toolbar__label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 1rem;
+      transition: background 0.1s;
+      flex-shrink: 0;
+    }
+    .ed-toolbar__label:hover { background: rgba(255,255,255,0.09); color: var(--heading); }
+
+    /* ── Тело редактора ── */
+    .ed-body {
+      min-height: 420px;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 1.25rem 1.5rem;
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.75;
+      outline: none;
+      word-break: break-word;
+    }
+    .ed-body:focus { outline: none; }
+    .ed-body[data-empty="1"]::before {
+      content: attr(data-placeholder);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: 1rem;
+    }
+    /* Стили контента внутри редактора */
+    .ed-body h2 { font-size: 1.35rem; font-weight: 700; margin: 1.5rem 0 0.5rem; color: var(--heading); border-bottom: 1px solid var(--line); padding-bottom: 0.35rem; }
+    .ed-body h3 { font-size: 1.1rem; font-weight: 600; margin: 1.25rem 0 0.4rem; color: var(--heading); }
+    .ed-body h4 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.35rem; color: var(--heading); }
+    .ed-body p { margin: 0 0 0.85rem; }
+    .ed-body ul, .ed-body ol { padding-left: 1.5rem; margin: 0 0 0.85rem; }
+    .ed-body li { margin-bottom: 0.3rem; }
+    .ed-body blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 1rem 0;
+      padding: 0.5rem 1rem;
+      background: rgba(91,155,213,0.07);
+      border-radius: 0 6px 6px 0;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .ed-body pre {
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      overflow-x: auto;
+      margin: 0.85rem 0;
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      color: var(--accent);
+      white-space: pre;
+    }
+    .ed-body code {
+      font-family: var(--mono);
+      font-size: 0.875em;
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      color: var(--accent);
+    }
+    .ed-body pre code { background: none; border: none; padding: 0; }
+    .ed-body a { color: var(--accent); text-decoration: underline; }
+    .ed-body img { max-width: 100%; border-radius: 8px; border: 1px solid var(--line); margin: 0.5rem 0; display: block; }
+    .ed-body table { width: 100%; border-collapse: collapse; margin: 0.85rem 0; font-size: 0.9rem; }
+    .ed-body th, .ed-body td { border: 1px solid var(--line); padding: 0.45rem 0.65rem; text-align: left; }
+    .ed-body th { background: var(--surface2); color: var(--heading); font-weight: 600; }
+    .ed-body hr { border: none; border-top: 1px solid var(--line); margin: 1.5rem 0; }
+    .ed-body.is-error { border: 1px solid var(--red); }
+
+    /* ── Статусбар ── */
+    .ed-statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 1.25rem;
+      border-top: 1px solid var(--line);
+      background: var(--surface2);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .ed-upload-status { min-height: 1em; }
+
+    /* ── Сайдбар ── */
+    .ed-sidebar { display: flex; flex-direction: column; gap: 0.85rem; }
+    .ed-sidebar-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+    .ed-sidebar-card__title {
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin: 0 0 0.75rem;
+    }
+    .ed-field { margin-bottom: 0.75rem; }
+    .ed-field:last-child { margin-bottom: 0; }
+    .ed-field label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .ed-field select, .ed-field input[type="url"] {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface2);
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 0.875rem;
+      transition: border-color 0.15s;
+    }
+    .ed-field select:focus, .ed-field input:focus { outline: none; border-color: var(--accent); }
+    .ed-field select.is-error { border-color: var(--red); }
+    .ed-field__error { display: none; font-size: 0.75rem; color: var(--red); margin-top: 0.25rem; }
+    .ed-field__error.is-visible { display: block; }
+
+    /* Превью изображения */
+    .ed-img-preview { position: relative; margin-top: 0.5rem; }
+    .ed-img-preview img { width: 100%; border-radius: 7px; border: 1px solid var(--line); display: block; }
+    .ed-img-preview__remove {
+      position: absolute; top: 5px; right: 5px;
+      width: 22px; height: 22px;
+      border: none; border-radius: 50%;
+      background: rgba(0,0,0,0.65); color: #fff;
+      font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ed-img-preview__remove:hover { background: rgba(201,96,96,0.8); }
+
+    /* Кнопки действий */
+    .ed-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    /* Модал ссылки */
+    .ed-link-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(5,8,14,0.7);
+      align-items: center;
+      justify-content: center;
+    }
+    .ed-link-modal.is-open { display: flex; }
+    .ed-link-modal__box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.35rem;
+      width: min(100% - 2rem, 380px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    }
+    .ed-link-modal__title { margin: 0 0 0.85rem; font-size: 1rem; font-weight: 600; color: var(--heading); }
+    .ed-link-modal__input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface2);
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .ed-link-modal__input:focus { outline: none; border-color: var(--accent); }
+    .ed-link-modal__actions { display: flex; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header class="gw-header">
+    <div class="gw-header__inner">
+      <a class="gw-logo" href="index.html"><span class="gw-logo__g">G</span>wiki</a>
+      <nav class="gw-nav">
+        <a href="index.html" class="gw-nav__link">Главная</a>
+        <a href="categories.html" class="gw-nav__link">Категории</a>
+      </nav>
+      <div class="gw-header__right">
+        <div id="gwAuthBar" class="gw-auth-bar"></div>
+      </div>
+    </div>
+  </header>
+
+  <div id="gwEditorLoading" style="padding:2rem;text-align:center;color:var(--muted)">Загрузка…</div>
+
+  <form id="gwEditorForm" style="display:none">
+    <div class="ed-layout">
+
+      <!-- Основной редактор -->
+      <div>
+        <div class="ed-card">
+          <div class="ed-card__head">
+            <div>
+              <h1 class="ed-card__title" id="gwEditorTitle">Редактор статьи</h1>
+              <p class="ed-card__sub" id="gwEditorSub"></p>
+            </div>
+          </div>
+
+          <!-- Заголовок -->
+          <input type="text" id="gwTitleInput" class="ed-title-input" placeholder="Заголовок статьи…" autocomplete="off">
+          <div id="gwTitleError" style="display:none;padding:.25rem 1.25rem;font-size:.8rem;color:var(--red)">Заголовок не может быть пустым</div>
+
+          <!-- Тулбар -->
+          <div class="ed-toolbar" id="gwEditorMain">
+            <!-- Форматирование текста -->
+            <button type="button" class="ed-toolbar__btn" data-cmd="bold" title="Жирный (Ctrl+B)"><b>B</b></button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="italic" title="Курсив (Ctrl+I)"><i>I</i></button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="underline" title="Подчёркнутый (Ctrl+U)"><u>U</u></button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="strikeThrough" title="Зачёркнутый"><s>S</s></button>
+            <div class="ed-toolbar__sep"></div>
+            <!-- Заголовки -->
+            <button type="button" class="ed-toolbar__btn" data-cmd="h2" title="Заголовок H2" style="font-size:.75rem;font-weight:700">H2</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="h3" title="Заголовок H3" style="font-size:.75rem;font-weight:700">H3</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="h4" title="Заголовок H4" style="font-size:.75rem;font-weight:700">H4</button>
+            <div class="ed-toolbar__sep"></div>
+            <!-- Списки -->
+            <button type="button" class="ed-toolbar__btn" data-cmd="insertUnorderedList" title="Маркированный список">•≡</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="insertOrderedList" title="Нумерованный список">1.</button>
+            <div class="ed-toolbar__sep"></div>
+            <!-- Блоки -->
+            <button type="button" class="ed-toolbar__btn" data-cmd="blockquote" title="Цитата">"</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="pre" title="Блок кода">&lt;/&gt;</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="code" title="Инлайн код">`</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="hr" title="Горизонтальная линия">—</button>
+            <div class="ed-toolbar__sep"></div>
+            <!-- Ссылка и изображение -->
+            <button type="button" class="ed-toolbar__btn" id="gwLinkBtn" title="Вставить ссылку">🔗</button>
+            <label class="ed-toolbar__label" title="Прикрепить изображение">
+              📎<input type="file" accept="image/jpeg,image/png,image/gif,image/webp" id="gwAttachFile" style="display:none">
+            </label>
+            <div class="ed-toolbar__sep"></div>
+            <!-- Выравнивание -->
+            <button type="button" class="ed-toolbar__btn" data-cmd="justifyLeft" title="По левому краю">⬅</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="justifyCenter" title="По центру">↔</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="justifyRight" title="По правому краю">➡</button>
+            <div class="ed-toolbar__sep"></div>
+            <!-- Отмена/повтор -->
+            <button type="button" class="ed-toolbar__btn" data-cmd="undo" title="Отменить (Ctrl+Z)">↩</button>
+            <button type="button" class="ed-toolbar__btn" data-cmd="redo" title="Повторить (Ctrl+Y)">↪</button>
+          </div>
+
+          <!-- Тело -->
+          <div class="ed-body" id="gwBodyEditor" contenteditable="true"
+               data-placeholder="Начните писать статью…"></div>
+          <div id="gwBodyError" style="display:none;padding:.25rem 1.25rem;font-size:.8rem;color:var(--red)">Текст статьи не может быть пустым</div>
+
+          <!-- Статусбар -->
+          <div class="ed-statusbar">
+            <span id="gwWordCount">0 слов</span>
+            <span class="ed-upload-status" id="gwUploadStatus"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Сайдбар -->
+      <div class="ed-sidebar">
+
+        <!-- Публикация -->
+        <div class="ed-sidebar-card">
+          <p class="ed-sidebar-card__title">Публикация</p>
+          <div class="ed-actions">
+            <button type="submit" class="gw-btn gw-btn--primary" id="gwSaveBtn">Опубликовать</button>
+            <button type="button" class="gw-btn gw-btn--ghost" id="gwCancelBtn">Отмена</button>
+          </div>
+          <div id="gwNotice" style="margin-top:.75rem"></div>
+        </div>
+
+        <!-- Категория (только mode=new) -->
+        <div class="ed-sidebar-card" id="gwCatFieldWrap" style="display:none">
+          <p class="ed-sidebar-card__title">Категория</p>
+          <div class="ed-field">
+            <select id="gwCatSelect" name="category_id">
+              <option value="">— выберите —</option>
+            </select>
+            <div class="ed-field__error" id="gwCatError">Выберите категорию</div>
+          </div>
+        </div>
+
+        <!-- Обложка -->
+        <div class="ed-sidebar-card">
+          <p class="ed-sidebar-card__title">Обложка</p>
+          <div class="ed-field">
+            <label>URL изображения</label>
+            <input type="url" id="gwImgUrlInput" placeholder="https://i.imgur.com/…">
+          </div>
+          <div class="ed-img-preview" id="gwImgPreview" style="display:none"></div>
+          <input type="hidden" id="gwImgUrl" value="">
+        </div>
+
+        <!-- Подсказки -->
+        <div class="ed-sidebar-card">
+          <p class="ed-sidebar-card__title">Горячие клавиши</p>
+          <div style="font-family:var(--mono);font-size:.72rem;color:var(--muted);line-height:1.8">
+            <div><kbd style="background:var(--surface2);border:1px solid var(--line);border-radius:3px;padding:.05rem .3rem">Ctrl+B</kbd> Жирный</div>
+            <div><kbd style="background:var(--surface2);border:1px solid var(--line);border-radius:3px;padding:.05rem .3rem">Ctrl+I</kbd> Курсив</div>
+            <div><kbd style="background:var(--surface2);border:1px solid var(--line);border-radius:3px;padding:.05rem .3rem">Ctrl+K</kbd> Ссылка</div>
+            <div><kbd style="background:var(--surface2);border:1px solid var(--line);border-radius:3px;padding:.05rem .3rem">Ctrl+Z</kbd> Отменить</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+  <!-- Модал вставки ссылки -->
+  <div class="ed-link-modal" id="gwLinkModal">
+    <div class="ed-link-modal__box">
+      <p class="ed-link-modal__title">Вставить ссылку</p>
+      <input type="url" id="gwLinkUrl" class="ed-link-modal__input" placeholder="https://…">
+      <div class="ed-link-modal__actions">
+        <button type="button" class="gw-btn gw-btn--primary gw-btn--sm" id="gwLinkConfirm">Вставить</button>
+        <button type="button" class="gw-btn gw-btn--ghost gw-btn--sm" id="gwLinkCancel">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="editor.js"></script>
+</body>
+</html>

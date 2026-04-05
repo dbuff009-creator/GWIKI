@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Управление ролями — Gwiki</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .rm-page { width: min(100% - 2rem, 960px); margin: 1.5rem auto 4rem; }
+    .rm-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .rm-header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; color: var(--heading); }
+
+    /* Форма назначения */
+    .rm-assign-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .rm-assign-card__title {
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin: 0 0 0.75rem;
+    }
+    .rm-assign-form {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .rm-assign-form input[type="email"] {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 0.9rem;
+    }
+    .rm-assign-form input:focus { outline: none; border-color: var(--accent); }
+    .rm-assign-form select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 0.9rem;
+    }
+    .rm-assign-form select:focus { outline: none; border-color: var(--accent); }
+    .rm-assign-msg { font-size: 0.82rem; margin-top: 0.5rem; min-height: 1.2em; }
+
+    /* Фильтры */
+    .rm-filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .rm-search {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 0.875rem;
+    }
+    .rm-search:focus { outline: none; border-color: var(--accent); }
+    .rm-search::placeholder { color: var(--muted); }
+    .rm-role-filter {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .rm-role-btn {
+      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .rm-role-btn:hover { color: var(--text); border-color: #4a4540; }
+    .rm-role-btn.is-active { color: var(--heading); border-color: var(--accent); }
+
+    /* Таблица пользователей */
+    .rm-table-wrap { overflow-x: auto; }
+    .rm-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .rm-table th {
+      text-align: left;
+      padding: 0.55rem 0.85rem;
+      border-bottom: 2px solid var(--line);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: var(--surface);
+    }
+    .rm-table td {
+      padding: 0.6rem 0.85rem;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    .rm-table tr:last-child td { border-bottom: none; }
+    .rm-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .rm-nick { font-weight: 600; color: var(--heading); }
+    .rm-email { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+
+    /* Бейдж роли */
+    .rm-role-badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .rm-role-badge--owner    { background: rgba(212,168,67,0.15); color: #d4a843; border: 1px solid rgba(212,168,67,0.3); }
+    .rm-role-badge--admin    { background: rgba(201,96,96,0.12);  color: #c96060; border: 1px solid rgba(201,96,96,0.3); }
+    .rm-role-badge--moderator{ background: rgba(91,155,213,0.12); color: #5b9bd5; border: 1px solid rgba(91,155,213,0.3); }
+    .rm-role-badge--postmaker{ background: rgba(92,184,122,0.12); color: #5cb87a; border: 1px solid rgba(92,184,122,0.3); }
+    .rm-role-badge--user     { background: rgba(122,135,153,0.12);color: #7a8799; border: 1px solid rgba(122,135,153,0.3); }
+
+    .rm-count { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+    .rm-empty { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.9rem; }
+    .rm-loading { padding: 2rem; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header class="gw-header">
+    <div class="gw-header__inner">
+      <a class="gw-logo" href="index.html"><span class="gw-logo__g">G</span>wiki</a>
+      <nav class="gw-nav">
+        <a href="index.html" class="gw-nav__link">Главная</a>
+      </nav>
+      <div class="gw-header__right">
+        <div id="gwAuthBar" class="gw-auth-bar"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="rm-page">
+    <div class="rm-header">
+      <h1>Управление ролями</h1>
+      <a href="index.html" class="gw-btn gw-btn--ghost gw-btn--sm">← Назад</a>
+    </div>
+
+    <div id="rmAccessDenied" style="display:none;padding:2rem;text-align:center;color:var(--red)">
+      Доступ только для владельца.
+    </div>
+
+    <div id="rmContent" style="display:none">
+      <!-- Назначить роль -->
+      <div class="rm-assign-card">
+        <p class="rm-assign-card__title">Назначить роль</p>
+        <div class="rm-assign-form">
+          <input type="email" id="rmEmail" placeholder="Email пользователя" autocomplete="off">
+          <select id="rmRole">
+            <option value="admin">admin</option>
+            <option value="moderator">moderator</option>
+            <option value="postmaker">postmaker</option>
+            <option value="user" selected>user</option>
+          </select>
+          <button class="gw-btn gw-btn--primary gw-btn--sm" id="rmAssignBtn">Назначить</button>
+        </div>
+        <div class="rm-assign-msg" id="rmAssignMsg"></div>
+      </div>
+
+      <!-- Фильтры -->
+      <div class="rm-filters">
+        <input type="search" id="rmSearch" class="rm-search" placeholder="Поиск по нику или email…" autocomplete="off">
+        <div class="rm-role-filter" id="rmRoleFilter">
+          <button class="rm-role-btn is-active" data-role="all">Все</button>
+          <button class="rm-role-btn" data-role="owner">owner</button>
+          <button class="rm-role-btn" data-role="admin">admin</button>
+          <button class="rm-role-btn" data-role="moderator">moderator</button>
+          <button class="rm-role-btn" data-role="postmaker">postmaker</button>
+          <button class="rm-role-btn" data-role="user">user</button>
+        </div>
+        <span class="rm-count" id="rmCount"></span>
+      </div>
+
+      <!-- Таблица -->
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden">
+        <div class="rm-table-wrap">
+          <table class="rm-table">
+            <thead>
+              <tr>
+                <th>Никнейм</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Дата регистрации</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rmTableBody">
+              <tr><td colspan="5" class="rm-loading">Загрузка…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const TOKEN_KEY = "gwiki_token_v2";
+      const token = localStorage.getItem(TOKEN_KEY) || "";
+      let allUsers = [];
+      let currentRole = "all";
+      let currentSearch = "";
+
+      function esc(v) { return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+      function fmtDate(ts) { return new Date(ts).toLocaleDateString("ru-RU"); }
+
+      const roleBadge = r => `<span class="rm-role-badge rm-role-badge--${r}">${r}</span>`;
+
+      // Auth bar
+      const authBar = document.getElementById("gwAuthBar");
+      if (token) {
+        fetch("/api/me", { headers: { Authorization: "Bearer " + token } })
+          .then(r => r.json())
+          .then(d => {
+            if (!d.user || d.user.role !== "owner") {
+              document.getElementById("rmAccessDenied").style.display = "";
+              return;
+            }
+            authBar.innerHTML = `<span style="font-size:.875rem;color:var(--text)">${esc(d.user.nickname)}</span>`;
+            document.getElementById("rmContent").style.display = "";
+            loadUsers();
+          })
+          .catch(() => { document.getElementById("rmAccessDenied").style.display = ""; });
+      } else {
+        document.getElementById("rmAccessDenied").style.display = "";
+      }
+
+      function loadUsers() {
+        fetch("/api/wiki/members", { headers: { Authorization: "Bearer " + token } })
+          .then(r => r.json())
+          .then(d => {
+            allUsers = d.members || [];
+            renderTable();
+          })
+          .catch(() => {
+            document.getElementById("rmTableBody").innerHTML = '<tr><td colspan="5" class="rm-empty">Ошибка загрузки.</td></tr>';
+          });
+      }
+
+      function renderTable() {
+        let users = allUsers;
+        if (currentRole !== "all") users = users.filter(u => u.role === currentRole);
+        if (currentSearch) {
+          const q = currentSearch.toLowerCase();
+          users = users.filter(u =>
+            u.nickname.toLowerCase().includes(q) ||
+            u.email.toLowerCase().includes(q)
+          );
+        }
+        document.getElementById("rmCount").textContent = users.length + " пользователей";
+        const tbody = document.getElementById("rmTableBody");
+        if (!users.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="rm-empty">Ничего не найдено.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = users.map(u => `
+          <tr data-id="${u.id}">
+            <td class="rm-nick">${esc(u.nickname)}</td>
+            <td class="rm-email">${esc(u.email)}</td>
+            <td>${roleBadge(u.role)}</td>
+            <td style="font-family:var(--mono);font-size:.72rem;color:var(--muted)">${fmtDate(u.created_at)}</td>
+            <td>
+              ${u.role !== "owner" ? `
+                <select class="rm-inline-role" data-email="${esc(u.email)}" style="padding:.25rem .5rem;border:1px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--heading);font-size:.78rem;font-family:var(--font)">
+                  <option value="admin"    ${u.role==="admin"?"selected":""}>admin</option>
+                  <option value="moderator"${u.role==="moderator"?"selected":""}>moderator</option>
+                  <option value="postmaker"${u.role==="postmaker"?"selected":""}>postmaker</option>
+                  <option value="user"     ${u.role==="user"?"selected":""}>user</option>
+                </select>
+                <button class="gw-btn gw-btn--sm rm-save-role" data-email="${esc(u.email)}" style="margin-left:.35rem">Сохранить</button>
+              ` : '<span style="font-size:.75rem;color:var(--muted)">владелец</span>'}
+            </td>
+          </tr>
+        `).join("");
+
+        // Сохранение роли прямо из таблицы
+        tbody.querySelectorAll(".rm-save-role").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const email = btn.dataset.email;
+            const row = btn.closest("tr");
+            const sel = row.querySelector(".rm-inline-role");
+            const role = sel.value;
+            btn.disabled = true; btn.textContent = "…";
+            try {
+              await apiFetch("/api/wiki/members/role", { method: "POST", body: JSON.stringify({ email, role }) });
+              // Обновляем локально
+              const u = allUsers.find(u => u.email === email);
+              if (u) u.role = role;
+              renderTable();
+              showMsg("Роль обновлена: " + email + " → " + role, "green");
+            } catch (err) {
+              btn.disabled = false; btn.textContent = "Сохранить";
+              showMsg(err.message, "red");
+            }
+          });
+        });
+      }
+
+      // Поиск
+      document.getElementById("rmSearch").addEventListener("input", function() {
+        currentSearch = this.value.trim();
+        renderTable();
+      });
+
+      // Фильтр по роли
+      document.getElementById("rmRoleFilter").querySelectorAll(".rm-role-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".rm-role-btn").forEach(b => b.classList.remove("is-active"));
+          btn.classList.add("is-active");
+          currentRole = btn.dataset.role;
+          renderTable();
+        });
+      });
+
+      // Назначить роль через форму
+      document.getElementById("rmAssignBtn").addEventListener("click", async () => {
+        const email = document.getElementById("rmEmail").value.trim();
+        const role = document.getElementById("rmRole").value;
+        if (!email) { showMsg("Введите email", "red"); return; }
+        try {
+          await apiFetch("/api/wiki/members/role", { method: "POST", body: JSON.stringify({ email, role }) });
+          showMsg("Роль назначена: " + email + " → " + role, "green");
+          document.getElementById("rmEmail").value = "";
+          loadUsers();
+        } catch (err) { showMsg(err.message, "red"); }
+      });
+
+      function showMsg(text, color) {
+        const el = document.getElementById("rmAssignMsg");
+        el.textContent = text;
+        el.style.color = color === "green" ? "var(--green)" : "var(--red)";
+        setTimeout(() => { el.textContent = ""; }, 4000);
+      }
+
+      async function apiFetch(path, opts = {}) {
+        const headers = { "Content-Type": "application/json", Authorization: "Bearer " + token, ...(opts.headers || {}) };
+        const res = await fetch(path, { ...opts, headers });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Ошибка");
+        return data;
+      }
+    })();
+  </script>
+</body>
+</html>

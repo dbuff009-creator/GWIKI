@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Политика конфиденциальности — Gwiki</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .privacy-page { width: min(100% - 2rem, 680px); margin: 2rem auto 4rem; }
+    .privacy-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.75rem 2rem; }
+    .privacy-card h1 { margin: 0 0 0.25rem; font-size: 1.45rem; font-weight: 700; color: var(--heading); }
+    .privacy-date { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin-bottom: 1.5rem; display: block; }
+    .privacy-card h2 { font-size: 0.95rem; font-weight: 600; color: var(--heading); margin: 1.35rem 0 0.4rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+    .privacy-card h2:first-of-type { border-top: none; padding-top: 0; }
+    .privacy-card p { margin: 0 0 0.65rem; font-size: 0.9rem; line-height: 1.65; color: var(--text); }
+    .privacy-card ul { margin: 0 0 0.65rem; padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6; color: var(--text); }
+    .privacy-card li { margin-bottom: 0.25rem; }
+    .privacy-card strong { color: var(--heading); }
+    .privacy-card a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header class="gw-header">
+    <div class="gw-header__inner">
+      <a class="gw-logo" href="index.html"><span class="gw-logo__g">G</span>wiki</a>
+      <nav class="gw-nav">
+        <a href="index.html" class="gw-nav__link">Главная</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="privacy-page">
+    <p style="margin-bottom:1rem"><a href="index.html" class="gw-btn gw-btn--ghost gw-btn--sm">← Назад</a></p>
+    <div class="privacy-card">
+      <h1>Политика конфиденциальности</h1>
+      <span class="privacy-date">Редакция: апрель 2026</span>
+
+      <h2>Что мы собираем</h2>
+      <p>При регистрации и использовании Gwiki мы собираем:</p>
+      <ul>
+        <li><strong>Email</strong> — для входа и идентификации. Не виден другим пользователям.</li>
+        <li><strong>Никнейм</strong> — отображается публично рядом с вашими материалами.</li>
+        <li><strong>Пароль</strong> — хранится в зашифрованном виде, мы не знаем его в открытом виде.</li>
+        <li><strong>Контент</strong> — статьи, комментарии, загруженные изображения.</li>
+        <li><strong>Метаданные</strong> — дата регистрации, активность, лайки.</li>
+      </ul>
+
+      <h2>Как используются данные</h2>
+      <p>Данные используются для работы сервиса: авторизация, отображение контента, модерация. Администрация имеет доступ к email и никнеймам для управления аккаунтами и соблюдения правил сообщества.</p>
+      <p>Мы <strong>не продаём</strong> данные третьим лицам и не используем их в рекламных целях.</p>
+
+      <h2>Кто видит ваши данные</h2>
+      <ul>
+        <li><strong>Все пользователи</strong> — видят ваш никнейм и опубликованный контент.</li>
+        <li><strong>Администрация</strong> — видит email для управления аккаунтом и модерации.</li>
+        <li><strong>Никто посторонний</strong> — данные не передаются третьим лицам.</li>
+      </ul>
+
+      <h2>Хранение и удаление</h2>
+      <p>Данные хранятся на сервере до удаления аккаунта. Чтобы удалить аккаунт — напишите администратору в <a href="https://discord.gg/AVwJDVncsq" target="_blank" rel="noopener">Discord</a>.</p>
+
+      <h2>Сессии</h2>
+      <p>Токен сессии хранится в <code style="font-family:var(--mono);font-size:.85em;background:var(--surface2);padding:.1rem .3rem;border-radius:3px">localStorage</code> браузера. Срок действия — 30 дней. При выходе токен аннулируется.</p>
+
+      <h2>Изменения</h2>
+      <p>При обновлении политики меняется дата редакции. Продолжение использования сервиса означает согласие с актуальной версией.</p>
+
+      <h2>Правила поведения</h2>
+      <p>Регистрируясь, вы соглашаетесь соблюдать следующие правила:</p>
+      <ul>
+        <li><strong>Адекватность.</strong> Общайтесь уважительно. Оскорбления, травля и агрессия запрещены.</li>
+        <li><strong>Без политики.</strong> Политические дискуссии, агитация и пропаганда не допускаются.</li>
+        <li><strong>Без NSFW.</strong> Запрещён любой контент для взрослых, насилие, шокирующие материалы.</li>
+        <li><strong>Без спама.</strong> Не публикуйте рекламу, повторяющийся контент и бессмысленные сообщения.</li>
+        <li><strong>Достоверность.</strong> Не распространяйте заведомо ложную информацию.</li>
+        <li><strong>Авторские права.</strong> Публикуйте только тот контент, на который у вас есть права.</li>
+      </ul>
+      <p>Нарушение правил может привести к блокировке аккаунта без предупреждения.</p>
+    </div>
+  </div>
+</body>
+</html>

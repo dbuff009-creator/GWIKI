@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — Gwiki</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .up-page { width: min(100% - 2rem, 900px); margin: 1.5rem auto 4rem; }
+
+    /* ── Hero карточка ── */
+    .up-hero {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .up-hero__banner {
+      height: 80px;
+      background: linear-gradient(135deg, rgba(91,155,213,0.18) 0%, rgba(91,155,213,0.04) 100%);
+      border-bottom: 1px solid var(--line);
+    }
+    .up-hero__body {
+      padding: 0 1.5rem 1.25rem;
+      display: flex;
+      align-items: flex-end;
+      gap: 1.1rem;
+      flex-wrap: wrap;
+    }
+    .up-avatar-wrap { margin-top: -32px; flex-shrink: 0; }
+    .up-avatar {
+      width: 72px; height: 72px;
+      border-radius: 14px;
+      border: 3px solid var(--surface);
+      object-fit: cover;
+      display: block;
+    }
+    .up-avatar-placeholder {
+      width: 72px; height: 72px;
+      border-radius: 14px;
+      border: 3px solid var(--surface);
+      background: linear-gradient(135deg, rgba(91,155,213,0.25), rgba(91,155,213,0.1));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem; font-weight: 700; color: var(--accent);
+    }
+    .up-hero__info { flex: 1; min-width: 0; padding-top: 0.5rem; }
+    .up-hero__name {
+      margin: 0 0 0.2rem;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--heading);
+      line-height: 1.2;
+    }
+    .up-hero__meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .up-role-badge {
+      display: inline-block;
+      padding: 0.12rem 0.5rem;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .up-role-badge--owner    { background: rgba(212,168,67,0.15); color: #d4a843; border: 1px solid rgba(212,168,67,0.3); }
+    .up-role-badge--admin    { background: rgba(201,96,96,0.12);  color: #c96060; border: 1px solid rgba(201,96,96,0.3); }
+    .up-role-badge--moderator{ background: rgba(91,155,213,0.12); color: #5b9bd5; border: 1px solid rgba(91,155,213,0.3); }
+    .up-role-badge--postmaker{ background: rgba(92,184,122,0.12); color: #5cb87a; border: 1px solid rgba(92,184,122,0.3); }
+    .up-role-badge--user     { background: rgba(122,135,153,0.1); color: #7a8799; border: 1px solid rgba(122,135,153,0.25); }
+
+    /* ── Статы ── */
+    .up-stats {
+      display: flex;
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+    .up-stat {
+      flex: 1;
+      padding: 0.85rem 1rem;
+      text-align: center;
+      border-right: 1px solid var(--line);
+    }
+    .up-stat:last-child { border-right: none; }
+    .up-stat__val {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--heading);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+    .up-stat__label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    /* ── Двухколоночный лейаут ── */
+    .up-grid {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .up-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Карточки ── */
+    .up-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .up-card:last-child { margin-bottom: 0; }
+    .up-card__head {
+      padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .up-card__title {
+      font-size: 0.78rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin: 0;
+    }
+    .up-card__body { padding: 1rem 1.1rem; }
+
+    /* Статьи */
+    .up-article-item {
+      display: block;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--line);
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.12s;
+    }
+    .up-article-item:last-child { border-bottom: none; }
+    .up-article-item:hover .up-article-item__title { color: var(--accent); }
+    .up-article-item__title {
+      font-weight: 600;
+      color: var(--heading);
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
+      transition: color 0.12s;
+    }
+    .up-article-item__meta {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .up-article-item__cat {
+      display: inline-block;
+      padding: 0.08rem 0.4rem;
+      background: rgba(91,155,213,0.1);
+      border-radius: 4px;
+      color: var(--accent);
+      font-size: 0.68rem;
+      margin-right: 0.35rem;
+    }
+
+    /* Bio */
+    .up-bio {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    /* Награды */
+    .up-award {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .up-award:last-child { border-bottom: none; }
+    .up-award__icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
+    .up-award__title { font-weight: 600; color: var(--heading); font-size: 0.875rem; }
+    .up-award__desc { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; }
+    .up-award__by { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* Форма выдачи награды */
+    .up-award-form { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
+    .up-award-form input, .up-award-form textarea {
+      width: 100%;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface2);
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 0.875rem;
+    }
+    .up-award-form input:focus, .up-award-form textarea:focus { outline: none; border-color: var(--accent); }
+
+    /* Бан */
+    .up-ban-block {
+      padding: 0.75rem 1rem;
+      background: rgba(201,96,96,0.08);
+      border: 1px solid rgba(201,96,96,0.25);
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+    }
+    .up-ban-block__title { font-weight: 600; color: #e07070; font-size: 0.875rem; margin-bottom: 0.25rem; }
+    .up-ban-block__reason { font-size: 0.8rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header class="gw-header">
+    <div class="gw-header__inner">
+      <a class="gw-logo" href="index.html"><span class="gw-logo__g">G</span>wiki</a>
+      <nav class="gw-nav">
+        <a href="index.html" class="gw-nav__link">Главная</a>
+        <a href="categories.html" class="gw-nav__link">Категории</a>
+      </nav>
+      <div class="gw-header__right">
+        <div id="gwAuthBar" class="gw-auth-bar"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="up-page">
+    <p style="margin-bottom:1rem">
+      <a href="javascript:history.back()" class="gw-btn gw-btn--ghost gw-btn--sm">← Назад</a>
+    </p>
+    <div id="profileRoot"><p class="gw-muted">Загрузка…</p></div>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.getElementById("profileRoot");
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
+      const meToken = localStorage.getItem("gwiki_token_v2");
+      const meHeaders = meToken ? { Authorization: "Bearer " + meToken } : {};
+
+      function esc(v) { return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+      function fmtDate(ts) { return new Date(ts).toLocaleDateString("ru-RU", { day:"numeric", month:"long", year:"numeric" }); }
+      function fmtShort(ts) { return new Date(ts).toLocaleDateString("ru-RU", { day:"numeric", month:"short" }); }
+
+      // Auth bar
+      const authBar = document.getElementById("gwAuthBar");
+      if (meToken) {
+        fetch("/api/me", { headers: meHeaders }).then(r => r.json()).then(d => {
+          if (d.user) authBar.innerHTML = `<span style="font-size:.875rem;color:var(--text)">${esc(d.user.nickname)}</span>`;
+        }).catch(() => {});
+      }
+
+      if (!id) {
+        root.innerHTML = '<p class="gw-muted">Профиль доступен только по прямой ссылке. Найдите пользователя через поиск <code style="font-family:var(--mono);background:var(--surface2);padding:.1rem .3rem;border-radius:3px">@ник</code> или кликните на имя автора.</p>';
+        return;
+      }
+      if (!/^\d+$/.test(id)) { root.innerHTML = '<p class="gw-muted">Некорректный id.</p>'; return; }
+
+      Promise.all([
+        fetch("/api/users/" + id + "/public").then(r => r.json()),
+        fetch("/api/users/" + id + "/articles").then(r => r.json()).catch(() => ({ articles: [] })),
+        fetch("/api/users/" + id + "/awards").then(r => r.json()).catch(() => ({ awards: [] })),
+        meToken ? fetch("/api/me", { headers: meHeaders }).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
+        meToken ? fetch("/api/users/" + id + "/ban", { headers: meHeaders }).then(r => r.json()).catch(() => ({})) : Promise.resolve({}),
+      ]).then(([pubData, artsData, awardsData, meData, banData]) => {
+        if (!pubData.user) { root.innerHTML = '<p class="gw-muted">Участник не найден.</p>'; return; }
+        const u = pubData.user;
+        const articles = artsData.articles || [];
+        const awards = awardsData.awards || [];
+        const me = meData.user || null;
+        const canManage = me?.canManageUsers;
+        const canBan = me && (me.canManageUsers || me.canDeleteComments);
+        const isBanned = !!banData.ban;
+        const banInfo = banData.ban;
+
+        const avatar = u.avatarUrl
+          ? `<img class="up-avatar" src="${esc(u.avatarUrl)}" alt="" crossorigin="anonymous">`
+          : `<div class="up-avatar-placeholder">${esc(u.nickname).slice(0,1).toUpperCase()}</div>`;
+
+        const roleBadge = `<span class="up-role-badge up-role-badge--${u.role}">${esc(u.roleLabel)}</span>`;
+
+        root.innerHTML = `
+          <!-- Hero -->
+          <div class="up-hero">
+            <div class="up-hero__banner"></div>
+            <div class="up-hero__body">
+              <div class="up-avatar-wrap">${avatar}</div>
+              <div class="up-hero__info">
+                <h1 class="up-hero__name">${esc(u.nickname)}</h1>
+                <div class="up-hero__meta">
+                  ${roleBadge}
+                  <span>На сайте с ${fmtDate(u.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+            <div class="up-stats">
+              <div class="up-stat">
+                <div class="up-stat__val">${u.stats.articles}</div>
+                <div class="up-stat__label">Статей</div>
+              </div>
+              <div class="up-stat">
+                <div class="up-stat__val">${u.stats.comments}</div>
+                <div class="up-stat__label">Комментариев</div>
+              </div>
+              <div class="up-stat">
+                <div class="up-stat__val">${awards.length}</div>
+                <div class="up-stat__label">Наград</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Основной контент -->
+          <div class="up-grid">
+            <!-- Левая колонка: статьи + о себе -->
+            <div>
+              ${u.bio ? `
+                <div class="up-card">
+                  <div class="up-card__head"><p class="up-card__title">О себе</p></div>
+                  <div class="up-card__body"><div class="up-bio">${esc(u.bio)}</div></div>
+                </div>
+              ` : ""}
+
+              <div class="up-card">
+                <div class="up-card__head">
+                  <p class="up-card__title">Статьи</p>
+                  <span style="font-family:var(--mono);font-size:.72rem;color:var(--muted)">${articles.length}</span>
+                </div>
+                <div class="up-card__body" style="padding:0 1.1rem">
+                  ${articles.length ? articles.map(a => `
+                    <a class="up-article-item" href="index.html#article/${a.id}">
+                      <div class="up-article-item__title">${esc(a.title)}</div>
+                      <div class="up-article-item__meta">
+                        <span class="up-article-item__cat">${esc(a.category_name)}</span>
+                        ${fmtShort(a.updated_at)}
+                      </div>
+                    </a>
+                  `).join("") : `<p class="gw-muted" style="padding:.75rem 0">Статей пока нет.</p>`}
+                </div>
+              </div>
+            </div>
+
+            <!-- Правая колонка: награды + управление -->
+            <div>
+              <div class="up-card" id="awardsCard">
+                <div class="up-card__head">
+                  <p class="up-card__title">Награды</p>
+                </div>
+                <div class="up-card__body" style="padding:0 1.1rem" id="awardsList">
+                  ${awards.length ? awards.map(a => `
+                    <div class="up-award" data-award-id="${a.id}">
+                      ${a.icon ? `<div class="up-award__icon">${esc(a.icon)}</div>` : ""}
+                      <div style="flex:1;min-width:0">
+                        <div class="up-award__title">${esc(a.title)}</div>
+                        ${a.description ? `<div class="up-award__desc">${esc(a.description)}</div>` : ""}
+                        <div class="up-award__by">от ${esc(a.awarded_by_nickname)} · ${fmtDate(a.created_at)}</div>
+                      </div>
+                      ${canManage ? `<button class="gw-btn gw-btn--danger gw-btn--sm up-award-del" data-id="${a.id}" style="flex-shrink:0">×</button>` : ""}
+                    </div>
+                  `).join("") : `<p class="gw-muted" style="padding:.75rem 0">Наград пока нет.</p>`}
+                </div>
+                ${canManage ? `
+                  <div style="padding:.75rem 1.1rem;border-top:1px solid var(--line)">
+                    <details>
+                      <summary class="gw-btn gw-btn--sm" style="cursor:pointer;display:inline-flex">+ Выдать награду</summary>
+                      <div class="up-award-form" id="awardForm" style="margin-top:.65rem">
+                        <input type="text" id="awardTitle" maxlength="60" placeholder="Название награды" required>
+                        <textarea id="awardDesc" rows="2" maxlength="200" placeholder="Описание (необязательно)"></textarea>
+                        <input type="text" id="awardIcon" maxlength="4" placeholder="🏆 Иконка (emoji)">
+                        <button class="gw-btn gw-btn--primary gw-btn--sm" id="awardSubmit">Выдать</button>
+                      </div>
+                    </details>
+                  </div>
+                ` : ""}
+              </div>
+
+              ${canBan && me.id !== Number(id) ? `
+                <div class="up-card" id="banCard">
+                  <div class="up-card__head"><p class="up-card__title">Модерация</p></div>
+                  <div class="up-card__body">
+                    ${isBanned ? `
+                      <div class="up-ban-block">
+                        <div class="up-ban-block__title">Заблокирован</div>
+                        ${banInfo?.reason ? `<div class="up-ban-block__reason">Причина: ${esc(banInfo.reason)}</div>` : ""}
+                        ${banInfo?.banned_by_nickname ? `<div class="up-ban-block__reason">Кем: ${esc(banInfo.banned_by_nickname)}</div>` : ""}
+                      </div>
+                      ${canManage ? `<button class="gw-btn gw-btn--green gw-btn--sm" id="unbanBtn">Разблокировать</button>` : ""}
+                    ` : `
+                      <input type="text" id="banReason" placeholder="Причина блокировки" style="width:100%;padding:.45rem .65rem;border:1px solid var(--line);border-radius:7px;background:var(--surface2);color:var(--heading);font-family:var(--font);font-size:.875rem;margin-bottom:.5rem">
+                      <button class="gw-btn gw-btn--danger gw-btn--sm" id="banBtn">Заблокировать</button>
+                    `}
+                  </div>
+                </div>
+              ` : ""}
+            </div>
+          </div>
+        `;
+
+        // Удаление награды
+        document.querySelectorAll(".up-award-del").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            if (!confirm("Удалить награду?")) return;
+            const res = await fetch("/api/users/" + id + "/awards/" + btn.dataset.id, { method: "DELETE", headers: meHeaders });
+            if (res.ok) btn.closest(".up-award").remove();
+            else alert("Ошибка");
+          });
+        });
+
+        // Выдача награды
+        document.getElementById("awardSubmit")?.addEventListener("click", async () => {
+          const title = document.getElementById("awardTitle")?.value.trim();
+          if (!title) { alert("Введите название"); return; }
+          const res = await fetch("/api/users/" + id + "/awards", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...meHeaders },
+            body: JSON.stringify({ title, description: document.getElementById("awardDesc")?.value.trim(), icon: document.getElementById("awardIcon")?.value.trim() }),
+          });
+          if (res.ok) location.reload();
+          else { const e = await res.json().catch(() => ({})); alert(e.error || "Ошибка"); }
+        });
+
+        // Бан
+        document.getElementById("banBtn")?.addEventListener("click", async () => {
+          if (!confirm("Заблокировать пользователя?")) return;
+          const reason = document.getElementById("banReason")?.value.trim() || "";
+          const res = await fetch("/api/users/" + id + "/ban", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...meHeaders },
+            body: JSON.stringify({ reason }),
+          });
+          if (res.ok) location.reload();
+          else { const e = await res.json().catch(() => ({})); alert(e.error || "Ошибка"); }
+        });
+
+        // Разбан
+        document.getElementById("unbanBtn")?.addEventListener("click", async () => {
+          const res = await fetch("/api/users/" + id + "/ban", { method: "DELETE", headers: meHeaders });
+          if (res.ok) location.reload();
+          else alert("Ошибка");
+        });
+
+      }).catch(() => { root.innerHTML = '<p class="gw-muted">Не удалось загрузить профиль.</p>'; });
+    })();
+  </script>
+</body>
+</html>

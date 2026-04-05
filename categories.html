@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Категории — Gwiki</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Страница категорий ── */
+    .cats-page {
+      width: min(100% - 2rem, var(--max));
+      margin: 1.5rem auto 4rem;
+    }
+    .cats-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .cats-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--heading);
+    }
+    .cats-search {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .cats-search-input {
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--heading);
+      font-family: var(--font);
+      font-size: 0.875rem;
+      width: 220px;
+      transition: border-color 0.15s;
+    }
+    .cats-search-input:focus { outline: none; border-color: var(--accent); }
+    .cats-search-input::placeholder { color: var(--muted); }
+
+    /* Сетка категорий */
+    .cats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .cats-cat-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.15s, transform 0.12s;
+      cursor: pointer;
+    }
+    .cats-cat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .cats-cat-card__head {
+      padding: 1rem 1.15rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .cats-cat-card__name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--heading);
+      margin-bottom: 0.25rem;
+    }
+    .cats-cat-card__desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .cats-cat-card__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 1.15rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .cats-cat-card__count { }
+    .cats-cat-card__open {
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-family: var(--font);
+      font-weight: 600;
+    }
+
+    /* Список статей внутри категории */
+    .cats-articles {
+      display: none;
+      border-top: 1px solid var(--line);
+      background: var(--surface2);
+    }
+    .cats-cat-card.is-open .cats-articles { display: block; }
+    .cats-article-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.65rem 1.15rem;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: background 0.12s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .cats-article-item:last-child { border-bottom: none; }
+    .cats-article-item:hover { background: rgba(91,155,213,0.07); }
+    .cats-article-item__title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--heading);
+      flex: 1;
+      min-width: 0;
+    }
+    .cats-article-item__meta {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .cats-articles__loading {
+      padding: 0.75rem 1.15rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .cats-articles__empty {
+      padding: 0.75rem 1.15rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .cats-no-results {
+      padding: 2rem 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="gw-header">
+    <div class="gw-header__inner">
+      <a class="gw-logo" href="index.html"><span class="gw-logo__g">G</span>wiki</a>
+      <nav class="gw-nav">
+        <a href="index.html" class="gw-nav__link">Главная</a>
+        <a href="categories.html" class="gw-nav__link is-active">Категории</a>
+      </nav>
+      <div class="gw-header__right">
+        <div id="gwAuthBar" class="gw-auth-bar"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="cats-page">
+    <div class="cats-header">
+      <h1>Все категории</h1>
+      <div class="cats-search">
+        <input type="search" id="catsSearch" class="cats-search-input" placeholder="Фильтр по названию…" autocomplete="off">
+        <span id="catsCount" style="font-family:var(--mono);font-size:.75rem;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <div id="catsGrid" class="cats-grid">
+      <p style="color:var(--muted)">Загрузка…</p>
+    </div>
+    <p class="cats-no-results" id="catsNoResults" style="display:none">Ничего не найдено.</p>
+  </div>
+
+  <script>
+    (() => {
+      const TOKEN_KEY = "gwiki_token_v2";
+      const token = localStorage.getItem(TOKEN_KEY) || "";
+      let allCats = [];
+
+      function esc(v) {
+        return String(v || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      }
+      function fmtDate(ts) {
+        return new Date(ts).toLocaleDateString("ru-RU", { day:"numeric", month:"short", year:"numeric" });
+      }
+      function plural(n, one, few, many) {
+        const m10 = n % 10, m100 = n % 100;
+        if (m10 === 1 && m100 !== 11) return n + " " + one;
+        if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return n + " " + few;
+        return n + " " + many;
+      }
+
+      // Auth bar
+      const authBar = document.getElementById("gwAuthBar");
+      if (token) {
+        fetch("/api/me", { headers: { Authorization: "Bearer " + token } })
+          .then(r => r.json()).then(d => {
+            if (d.user) {
+              authBar.innerHTML = `<span style="font-size:.875rem;color:var(--text)">${esc(d.user.nickname)}</span>
+                <a href="index.html" class="gw-btn gw-btn--ghost gw-btn--sm">Главная</a>`;
+            }
+          }).catch(() => {});
+      } else {
+        authBar.innerHTML = `<a href="index.html" class="gw-btn gw-btn--ghost gw-btn--sm">Войти</a>`;
+      }
+
+      // Загрузка категорий
+      fetch("/api/wiki/categories")
+        .then(r => r.json())
+        .then(data => {
+          allCats = data.categories || [];
+          renderCats(allCats);
+        })
+        .catch(() => {
+          document.getElementById("catsGrid").innerHTML = '<p style="color:var(--muted)">Не удалось загрузить категории.</p>';
+        });
+
+      function renderCats(cats) {
+        const grid = document.getElementById("catsGrid");
+        const noRes = document.getElementById("catsNoResults");
+        const cnt = document.getElementById("catsCount");
+        cnt.textContent = plural(cats.length, "категория", "категории", "категорий");
+        if (!cats.length) {
+          grid.innerHTML = "";
+          noRes.style.display = "";
+          return;
+        }
+        noRes.style.display = "none";
+        grid.innerHTML = cats.map(c => `
+          <div class="cats-cat-card" data-slug="${esc(c.slug)}" data-id="${c.id}">
+            <div class="cats-cat-card__head">
+              <div class="cats-cat-card__name">${esc(c.name)}</div>
+              ${c.description ? `<div class="cats-cat-card__desc">${esc(c.description)}</div>` : ""}
+            </div>
+            <div class="cats-cat-card__meta">
+              <span class="cats-cat-card__count">${plural(c.article_count, "статья","статьи","статей")}</span>
+              <span class="cats-cat-card__open">Открыть ▾</span>
+            </div>
+            <div class="cats-articles" id="arts-${esc(c.slug)}">
+              <div class="cats-articles__loading">Загрузка…</div>
+            </div>
+          </div>
+        `).join("");
+
+        // Клик по карточке — раскрыть/закрыть и загрузить статьи
+        grid.querySelectorAll(".cats-cat-card").forEach(card => {
+          card.addEventListener("click", e => {
+            // Не реагируем на клик по статье
+            if (e.target.closest(".cats-article-item")) return;
+            const slug = card.dataset.slug;
+            const isOpen = card.classList.contains("is-open");
+            // Закрыть все
+            grid.querySelectorAll(".cats-cat-card").forEach(c => {
+              c.classList.remove("is-open");
+              c.querySelector(".cats-cat-card__open").textContent = "Открыть ▾";
+            });
+            if (!isOpen) {
+              card.classList.add("is-open");
+              card.querySelector(".cats-cat-card__open").textContent = "Закрыть ▴";
+              loadArticles(slug, card);
+            }
+          });
+        });
+      }
+
+      const loadedSlugs = new Set();
+      function loadArticles(slug, card) {
+        if (loadedSlugs.has(slug)) return; // уже загружено
+        loadedSlugs.add(slug);
+        const container = card.querySelector(".cats-articles");
+        fetch("/api/wiki/categories/" + slug + "/articles")
+          .then(r => r.json())
+          .then(data => {
+            const arts = data.articles || [];
+            if (!arts.length) {
+              container.innerHTML = '<div class="cats-articles__empty">Статей пока нет.</div>';
+              return;
+            }
+            container.innerHTML = arts.map(a => `
+              <a class="cats-article-item" href="index.html#article/${a.id}">
+                <div class="cats-article-item__title">${esc(a.title)}</div>
+                <div class="cats-article-item__meta">${fmtDate(a.updated_at)}</div>
+              </a>
+            `).join("");
+          })
+          .catch(() => {
+            container.innerHTML = '<div class="cats-articles__empty">Ошибка загрузки.</div>';
+          });
+      }
+
+      // Фильтр
+      document.getElementById("catsSearch").addEventListener("input", function() {
+        const q = this.value.trim().toLowerCase();
+        if (!q) { renderCats(allCats); return; }
+        renderCats(allCats.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          (c.description || "").toLowerCase().includes(q)
+        ));
+      });
+    })();
+  </script>
+</body>
+</html>
