@@ -33,11 +33,11 @@ const upload = multer({
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const DATA_DIR = path.join(__dirname, "..", "data");
+const DATA_DIR = path.join(__dirname, "data");
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const db = createClient({
-  url: process.env.TURSO_URL || "file:../data/app.db",
+  url: process.env.TURSO_URL || "file:./data/app.db",
   authToken: process.env.TURSO_TOKEN,
 });
 
@@ -200,8 +200,8 @@ app.use(
     legacyHeaders: false,
   })
 );
-app.use(express.static(path.join(__dirname, "..")));
-app.use("/wiki-app/uploads", express.static(UPLOADS_DIR));
+app.use(express.static(__dirname));
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
